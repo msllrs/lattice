@@ -84,6 +84,24 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
         "variant": columnType
       });
       
+      // Rename the cell based on its type
+      if (columnType === "checkbox") {
+        cell.name = "check";
+        
+        // Make checkbox layer visible
+        makeSpecificLayerVisible(cell, "checkbox");
+      } else if (columnType === "icon") {
+        cell.name = "icon";
+        
+        // Make iconWrapper layer visible
+        makeSpecificLayerVisible(cell, "iconWrapper");
+        
+        // Set the icon to more-horizontal
+        setIconToMoreHorizontal(cell);
+      } else {
+        cell.name = "data"; // For header cells in the header row
+      }
+      
       // Set layout properties based on column type
       if (columnType === "checkbox" || columnType === "icon") {
         // Fixed width for checkbox and icon cells
@@ -129,6 +147,15 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
           "variant": cellType
         });
         
+        // Rename the cell based on its type
+        if (cellType === "checkbox") {
+          cell.name = "check";
+        } else if (cellType === "icon") {
+          cell.name = "icon";
+        } else {
+          cell.name = "data"; // For body cells
+        }
+        
         // Set layout properties based on cell type
         if (cellType === "checkbox" || cellType === "icon") {
           // Fixed width for checkbox and icon cells
@@ -161,5 +188,57 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
   } catch (error) {
     console.error("Error creating table:", error);
     figma.notify(`Error creating table: ${error}`, { error: true });
+  }
+}
+
+/**
+ * Makes a specific layer visible by name within a node
+ */
+function makeSpecificLayerVisible(node: SceneNode, layerName: string): void {
+  if ('children' in node) {
+    for (const child of node.children) {
+      // Make the specific layer visible if it matches the name
+      if (child.name === layerName) {
+        child.visible = true;
+      }
+      
+      // Continue searching in children
+      if ('children' in child) {
+        makeSpecificLayerVisible(child, layerName);
+      }
+    }
+  }
+}
+
+/**
+ * Sets the icon to more-horizontal in the button-icon component
+ */
+function setIconToMoreHorizontal(node: SceneNode): void {
+  if ('children' in node) {
+    for (const child of node.children) {
+      // Find the iconWrapper
+      if (child.name === "iconWrapper") {
+        // Navigate to button-icon
+        if ('children' in child) {
+          for (const buttonIcon of child.children) {
+            if (buttonIcon.name === "button-icon" && buttonIcon.type === "INSTANCE") {
+              // Check if the button-icon has an "icon" property
+              if (buttonIcon.componentProperties && 'icon' in buttonIcon.componentProperties) {
+                // Set the icon property to more-horizontal
+                buttonIcon.setProperties({
+                  "icon": "more-horizontal"
+                });
+                return; // Exit after setting the property
+              }
+            }
+          }
+        }
+      }
+      
+      // Continue searching in children
+      if ('children' in child) {
+        setIconToMoreHorizontal(child);
+      }
+    }
   }
 }
