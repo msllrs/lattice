@@ -1,37 +1,131 @@
-// This plugin will open a window to prompt the user to enter a number, and
-// it will then create that many rectangles on the screen.
+// Show the UI
+figma.showUI(__html__, { width: 300, height: 400 });
 
-// This file holds the main code for plugins. Code in this file has access to
-// the *figma document* via the figma global object.
-// You can access browser APIs in the <script> tag inside "ui.html" which has a
-// full browser environment (See https://www.figma.com/plugin-docs/how-plugins-run).
-
-// This shows the HTML page in "ui.html".
-figma.showUI(__html__);
-
-// Calls to "parent.postMessage" from within the HTML page will trigger this
-// callback. The callback will be passed the "pluginMessage" property of the
-// posted message.
-figma.ui.onmessage =  (msg: {type: string, count: number}) => {
-  // One way of distinguishing between different types of messages sent from
-  // your HTML page is to use an object with a "type" property like this.
-  if (msg.type === 'create-shapes') {
-    // This plugin creates rectangles on the screen.
-    const numberOfRectangles = msg.count;
-
-    const nodes: SceneNode[] = [];
-    for (let i = 0; i < numberOfRectangles; i++) {
-      const rect = figma.createRectangle();
-      rect.x = i * 150;
-      rect.fills = [{ type: 'SOLID', color: { r: 1, g: 0.5, b: 0 } }];
-      figma.currentPage.appendChild(rect);
-      nodes.push(rect);
-    }
-    figma.currentPage.selection = nodes;
-    figma.viewport.scrollAndZoomIntoView(nodes);
+// Handle messages from the UI
+figma.ui.onmessage = async (msg) => {
+  if (msg.type === 'create-table') {
+    await createTable(msg.rows, msg.columns);
+  } else if (msg.type === 'cancel') {
+    figma.closePlugin();
   }
-
-  // Make sure to close the plugin when you're done. Otherwise the plugin will
-  // keep running, which shows the cancel button at the bottom of the screen.
-  figma.closePlugin();
 };
+
+/**
+ * Creates a table with the specified number of rows and columns
+ * using components from the published library
+ */
+async function createTable(rows: number, columns: number): Promise<void> {
+  try {
+    // Find instances on the page
+    const instances = figma.currentPage.findAllWithCriteria({
+      types: ['INSTANCE']
+    });
+    
+    console.log(`Found ${instances.length} instances on the page`);
+    
+    // Try to find header and body cell instances
+    let headerInstance: InstanceNode | null = null;
+    let bodyInstance: InstanceNode | null = null;
+    
+    for (const instance of instances) {
+      const name = instance.name.toLowerCase();
+      
+      if (name.includes("header")) {
+        headerInstance = instance;
+        console.log(`Found header instance: ${instance.name}`);
+      } else if (name.includes("body")) {
+        bodyInstance = instance;
+        console.log(`Found body instance: ${instance.name}`);
+      }
+    }
+    
+    // If we didn't find specific instances, try to use any table cell instances
+    if (!headerInstance || !bodyInstance) {
+      for (const instance of instances) {
+        const name = instance.name.toLowerCase();
+        
+        if (name.includes("table") && name.includes("cell")) {
+          if (!headerInstance) {
+            headerInstance = instance;
+            console.log(`Using ${instance.name} as header`);
+          } else if (!bodyInstance) {
+            bodyInstance = instance;
+            console.log(`Using ${instance.name} as body`);
+          }
+        }
+      }
+    }
+    
+    // If we still don't have both, show an error
+    if (!headerInstance || !bodyInstance) {
+      figma.notify("🚨 Please add header and body cell instances on the page first.", { error: true });
+      return;
+    }
+    
+    // Create a frame for the table
+    const table = figma.createFrame();
+    table.name = "table";
+    table.layoutMode = "VERTICAL";
+    table.primaryAxisSizingMode = "AUTO";
+    table.counterAxisSizingMode = "AUTO";
+    table.itemSpacing = 0;
+    table.fills = [];
+    table.cornerRadius = 0;
+    table.paddingLeft = 0;
+    table.paddingRight = 0;
+    table.paddingTop = 0;
+    table.paddingBottom = 0;
+    
+    // Create header row
+    const headerRow = figma.createFrame();
+    headerRow.name = "header";
+    headerRow.layoutMode = "HORIZONTAL";
+    headerRow.primaryAxisSizingMode = "AUTO";
+    headerRow.counterAxisSizingMode = "AUTO";
+    headerRow.itemSpacing = 0;
+    headerRow.fills = [];
+    
+    // Add header cells
+    for (let i = 0; i < columns; i++) {
+      const cell = headerInstance.clone();
+      headerRow.appendChild(cell);
+    }
+    
+    table.appendChild(headerRow);
+    
+    // Create data rows
+    for (let i = 0; i < rows - 1; i++) {
+      const dataRow = figma.createFrame();
+      dataRow.name = `row ${i + 1}`;
+      dataRow.layoutMode = "HORIZONTAL";
+      dataRow.primaryAxisSizingMode = "AUTO";
+      dataRow.counterAxisSizingMode = "AUTO";
+      dataRow.itemSpacing = 0;
+      dataRow.fills = [];
+      
+      // Add body cells
+      for (let j = 0; j < columns; j++) {
+        const cell = bodyInstance.clone();
+        dataRow.appendChild(cell);
+      }
+      
+      table.appendChild(dataRow);
+    }
+    
+    // Center the table in the viewport
+    const centerX = figma.viewport.center.x;
+    const centerY = figma.viewport.center.y;
+    table.x = centerX - (table.width / 2);
+    table.y = centerY - (table.height / 2);
+    
+    // Select the table
+    figma.currentPage.selection = [table];
+    figma.viewport.scrollAndZoomIntoView([table]);
+    
+    figma.notify("Table created successfully!");
+    figma.closePlugin();
+  } catch (error) {
+    console.error("Error creating table:", error);
+    figma.notify(`Error creating table: ${error}`, { error: true });
+  }
+}
