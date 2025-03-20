@@ -53,8 +53,6 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
     table.layoutMode = "VERTICAL";
     table.primaryAxisSizingMode = "AUTO";
     table.counterAxisSizingMode = "FIXED";
-    // Use a valid value for counterAxisAlignItems
-    table.counterAxisAlignItems = "MAX";
     table.itemSpacing = 0;
     table.fills = [];
     table.cornerRadius = 0;
@@ -72,14 +70,9 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
     headerRow.layoutMode = "HORIZONTAL";
     headerRow.primaryAxisSizingMode = "FIXED";
     headerRow.counterAxisSizingMode = "AUTO";
-    headerRow.primaryAxisAlignItems = "SPACE_BETWEEN";
     headerRow.itemSpacing = 0;
     headerRow.fills = [];
     headerRow.resize(table.width, headerRow.height);
-    
-    // Calculate the total flex weight for expandable columns
-    const expandableColumns = columnTypes.filter(type => type !== "checkbox" && type !== "icon").length;
-    const flexWeight = expandableColumns > 0 ? 1 / expandableColumns : 0;
     
     // Add header cells based on column types
     for (let i = 0; i < columns; i++) {
@@ -91,14 +84,15 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
         "variant": columnType
       });
       
-      // Set sizing mode based on column type
+      // Set layout properties based on column type
       if (columnType === "checkbox" || columnType === "icon") {
         // Fixed width for checkbox and icon cells
         cell.layoutAlign = "INHERIT";
+        cell.layoutGrow = 0;
       } else {
         // Fill for header and body cells
         cell.layoutAlign = "STRETCH";
-        // Can't use layoutGrow on instances, so we'll rely on STRETCH
+        cell.layoutGrow = 1;
       }
       
       headerRow.appendChild(cell);
@@ -113,7 +107,6 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
       dataRow.layoutMode = "HORIZONTAL";
       dataRow.primaryAxisSizingMode = "FIXED";
       dataRow.counterAxisSizingMode = "AUTO";
-      dataRow.primaryAxisAlignItems = "SPACE_BETWEEN";
       dataRow.itemSpacing = 0;
       dataRow.fills = [];
       dataRow.resize(table.width, dataRow.height);
@@ -136,14 +129,15 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
           "variant": cellType
         });
         
-        // Set sizing mode based on column type
+        // Set layout properties based on cell type
         if (cellType === "checkbox" || cellType === "icon") {
           // Fixed width for checkbox and icon cells
           cell.layoutAlign = "INHERIT";
+          cell.layoutGrow = 0;
         } else {
           // Fill for header and body cells
           cell.layoutAlign = "STRETCH";
-          // Can't use layoutGrow on instances, so we'll rely on STRETCH
+          cell.layoutGrow = 1;
         }
         
         dataRow.appendChild(cell);

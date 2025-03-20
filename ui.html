@@ -3,47 +3,85 @@
 <head>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       margin: 0;
-      padding: 20px;
-    }
-
-    .container {
+      padding: 0;
+      background-color: #ffffff;
+      color: #18181b;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      overflow: hidden;
     }
 
-    h2 {
-      margin-top: 0;
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 16px;
     }
 
-    .form-group {
+    .section {
+      padding: 16px;
+    }
+
+    .section-header {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      margin-bottom: 8px;
     }
 
-    label {
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .section-subtitle {
+      font-size: 12px;
+      color: #71717a;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .input-group {
+      flex: 1;
+      margin-top: 8px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 12px;
       font-weight: 500;
+      margin-bottom: 4px;
+      color: #18181b;
     }
 
-    input {
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+    input[type="number"] {
+      width: 100%;
+      font-family: 'Geist Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 8px 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #e4e4e7;
+      margin-bottom: 12px;
+      box-sizing: border-box;
     }
 
     .column-types {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-top: 8px;
-      max-height: 150px;
+      margin-top: 4px;
+      max-height: 164px;
       overflow-y: auto;
-      border: 1px solid #eee;
+      border: 1px solid #e4e4e7;
       padding: 8px;
-      border-radius: 4px;
+      border-radius: 6px;
+      background-color: #f4f4f5;
     }
 
     .column-row {
@@ -53,90 +91,110 @@
     }
 
     .column-number {
-      width: 20px;
+      width: 16px;
       text-align: right;
-      font-size: 12px;
-      color: #666;
+      font-size: 10px;
+      color: #71717a;
+      font-family: 'Geist Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
     }
 
     select {
       flex-grow: 1;
-      padding: 6px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+      padding: 8px 24px 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #e4e4e7;
+      font-size: 12px;
+      font-family: 'Geist Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-weight: 500;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
     }
 
-    .buttons {
+    .buttons-container {
+      position: sticky;
+      bottom: 0;
+      padding: 16px;
+      background-color: white;
+      z-index: 1;
+      border-top: 1px solid #e4e4e7;
+    }
+
+    .button-row {
       display: flex;
       gap: 8px;
-      margin-top: 8px;
     }
 
-    button {
-      padding: 8px 16px;
-      background-color: #18A0FB;
+    .action-button {
+      background-color: #18181b;
       color: white;
       border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      flex-grow: 1;
-    }
-
-    button.secondary {
-      background-color: #F5F5F5;
-      color: #333;
-      border: 1px solid #ccc;
-    }
-
-    .note {
+      padding: 12px;
       font-size: 12px;
-      color: #666;
-      margin-top: 16px;
-      padding: 8px;
-      background-color: #f8f8f8;
-      border-radius: 4px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      height: 40px;
+      width: 100%;
     }
 
-    .important {
-      font-weight: bold;
-      color: #d93025;
+    .action-button:hover {
+      background-color: #18181be6;
+    }
+
+    .secondary-button {
+      display: none;
+    }
+
+    .simple-note {
+      font-size: 12px;
+      color: #c74801;
+      margin-top: 16px;
+      padding: 12px;
+      line-height: 16px;
+      background-color: #f3d7c863;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Create Simple Table</h2>
+  <div class="content">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">Craft simple tables</div>
+        <div class="section-subtitle">Configure your table properties below</div>
+      </div>
 
-    <div class="form-group">
-      <label for="rows">Number of Rows:</label>
-      <input type="number" id="rows" value="3" min="1" max="20">
-    </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label" for="rows">Rows</label>
+          <input type="number" id="rows" value="3" min="1" max="20">
+        </div>
 
-    <div class="form-group">
-      <label for="columns">Number of Columns:</label>
-      <input type="number" id="columns" value="3" min="1" max="10" onchange="updateColumnTypes()">
-    </div>
+        <div class="input-group">
+          <label class="input-label" for="columns">Columns</label>
+          <input type="number" id="columns" value="8" min="1" max="10" onchange="updateColumnTypes()">
+        </div>
+      </div>
 
-    <div class="form-group">
-      <label>Column Types:</label>
-      <div class="column-types" id="column-types-container">
-        <!-- Column type selectors will be added here dynamically -->
+      <div class="input-group">
+        <label class="input-label">Column types</label>
+        <div class="column-types" id="column-types-container">
+          <!-- Column type selectors will be added here dynamically -->
+        </div>
+      </div>
+
+      <div class="simple-note">
+        The current page must contain an instance of table-cell.
       </div>
     </div>
+  </div>
 
-    <div class="buttons">
-      <button id="create">Create Table</button>
-      <button id="cancel" class="secondary">Cancel</button>
-    </div>
-
-    <div class="note">
-      <p class="important">IMPORTANT: Before using this plugin:</p>
-      <ol>
-        <li>Make sure you have a table-cell instance on your current page.</li>
-        <li>The plugin will clone this instance and set the variant property to create your table.</li>
-        <li>The instance should have a "variant" component property with options for "header", "body", "checkbox", and "icon".</li>
-      </ol>
-      <p>This approach uses the component variant system to create different cell types.</p>
+  <div class="buttons-container">
+    <div class="button-row">
+      <button id="create" class="action-button">Create table</button>
+      <button id="cancel" class="secondary-button">Cancel</button>
     </div>
   </div>
 
@@ -162,8 +220,8 @@
         select.id = `column-type-${i}`;
         
         const options = [
-          { value: 'header', text: 'Header' },
           { value: 'checkbox', text: 'Checkbox' },
+          { value: 'header', text: 'Data' },
           { value: 'icon', text: 'Icon' }
         ];
         
@@ -179,6 +237,8 @@
           select.value = 'checkbox';
         } else if (i === columnsCount - 1) {
           select.value = 'icon';
+        } else {
+          select.value = 'header';
         }
         
         row.appendChild(number);
