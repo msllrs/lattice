@@ -7,39 +7,71 @@
       margin: 0;
       padding: 20px;
     }
-    
+
     .container {
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
-    
+
     h2 {
       margin-top: 0;
     }
-    
+
     .form-group {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    
+
     label {
       font-weight: 500;
     }
-    
+
     input {
       padding: 8px;
       border-radius: 4px;
       border: 1px solid #ccc;
     }
-    
+
+    .column-types {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      border: 1px solid #eee;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .column-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .column-number {
+      width: 20px;
+      text-align: right;
+      font-size: 12px;
+      color: #666;
+    }
+
+    select {
+      flex-grow: 1;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
     .buttons {
       display: flex;
       gap: 8px;
       margin-top: 8px;
     }
-    
+
     button {
       padding: 8px 16px;
       background-color: #18A0FB;
@@ -49,13 +81,13 @@
       cursor: pointer;
       flex-grow: 1;
     }
-    
+
     button.secondary {
       background-color: #F5F5F5;
       color: #333;
       border: 1px solid #ccc;
     }
-    
+
     .note {
       font-size: 12px;
       color: #666;
@@ -64,7 +96,7 @@
       background-color: #f8f8f8;
       border-radius: 4px;
     }
-    
+
     .important {
       font-weight: bold;
       color: #d93025;
@@ -74,43 +106,108 @@
 <body>
   <div class="container">
     <h2>Create Simple Table</h2>
-    
+
     <div class="form-group">
       <label for="rows">Number of Rows:</label>
       <input type="number" id="rows" value="3" min="1" max="20">
     </div>
-    
+
     <div class="form-group">
       <label for="columns">Number of Columns:</label>
-      <input type="number" id="columns" value="3" min="1" max="10">
+      <input type="number" id="columns" value="3" min="1" max="10" onchange="updateColumnTypes()">
     </div>
-    
+
+    <div class="form-group">
+      <label>Column Types:</label>
+      <div class="column-types" id="column-types-container">
+        <!-- Column type selectors will be added here dynamically -->
+      </div>
+    </div>
+
     <div class="buttons">
       <button id="create">Create Table</button>
       <button id="cancel" class="secondary">Cancel</button>
     </div>
-    
+
     <div class="note">
       <p class="important">IMPORTANT: Before using this plugin:</p>
       <ol>
-        <li>Make sure you have at least one header cell and one body cell instance on your current page.</li>
-        <li>The plugin will clone these instances to create your table.</li>
-        <li>The instances should be from your component library.</li>
+        <li>Make sure you have a table-cell instance on your current page.</li>
+        <li>The plugin will clone this instance and set the variant property to create your table.</li>
+        <li>The instance should have a "variant" component property with options for "header", "body", "checkbox", and "icon".</li>
       </ol>
-      <p>This approach avoids the limitations of accessing library components directly.</p>
+      <p>This approach uses the component variant system to create different cell types.</p>
     </div>
   </div>
 
   <script>
+    // Initialize column types
+    function updateColumnTypes() {
+      const columnsCount = parseInt(document.getElementById('columns').value);
+      const container = document.getElementById('column-types-container');
+      
+      // Clear existing options
+      container.innerHTML = '';
+      
+      // Add new options
+      for (let i = 0; i < columnsCount; i++) {
+        const row = document.createElement('div');
+        row.className = 'column-row';
+        
+        const number = document.createElement('div');
+        number.className = 'column-number';
+        number.textContent = `${i + 1}:`;
+        
+        const select = document.createElement('select');
+        select.id = `column-type-${i}`;
+        
+        const options = [
+          { value: 'header', text: 'Header' },
+          { value: 'checkbox', text: 'Checkbox' },
+          { value: 'icon', text: 'Icon' }
+        ];
+        
+        options.forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt.value;
+          option.textContent = opt.text;
+          select.appendChild(option);
+        });
+        
+        // Set default values: first column to checkbox, last column to icon
+        if (i === 0) {
+          select.value = 'checkbox';
+        } else if (i === columnsCount - 1) {
+          select.value = 'icon';
+        }
+        
+        row.appendChild(number);
+        row.appendChild(select);
+        container.appendChild(row);
+      }
+    }
+    
+    // Initialize on load
+    updateColumnTypes();
+    
+    // Create table button click handler
     document.getElementById('create').addEventListener('click', () => {
       const rows = parseInt(document.getElementById('rows').value);
       const columns = parseInt(document.getElementById('columns').value);
+      
+      // Get column types
+      const columnTypes = [];
+      for (let i = 0; i < columns; i++) {
+        const select = document.getElementById(`column-type-${i}`);
+        columnTypes.push(select.value);
+      }
       
       parent.postMessage({ 
         pluginMessage: { 
           type: 'create-table',
           rows,
-          columns
+          columns,
+          columnTypes
         } 
       }, '*');
     });
