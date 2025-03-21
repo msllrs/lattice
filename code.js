@@ -97,7 +97,7 @@ function createTable(rows, columns, columnTypes) {
                     setIconToMoreHorizontal(cell);
                 }
                 else {
-                    cell.name = "data"; // For header cells in the header row
+                    cell.name = "cell"; // For header cells in the header row
                 }
                 // Set layout properties based on column type
                 if (columnType === "checkbox" || columnType === "icon") {
@@ -146,7 +146,7 @@ function createTable(rows, columns, columnTypes) {
                         cell.name = "icon";
                     }
                     else {
-                        cell.name = "data"; // For body cells
+                        cell.name = "cell"; // For body cells
                     }
                     // Set layout properties based on cell type
                     if (cellType === "checkbox" || cellType === "icon") {

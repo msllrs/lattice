@@ -99,7 +99,7 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
         // Set the icon to more-horizontal
         setIconToMoreHorizontal(cell);
       } else {
-        cell.name = "data"; // For header cells in the header row
+        cell.name = "cell"; // For header cells in the header row
       }
       
       // Set layout properties based on column type
@@ -153,7 +153,7 @@ async function createTable(rows: number, columns: number, columnTypes: string[])
         } else if (cellType === "icon") {
           cell.name = "icon";
         } else {
-          cell.name = "data"; // For body cells
+          cell.name = "cell"; // For body cells
         }
         
         // Set layout properties based on cell type
